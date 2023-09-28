@@ -10,7 +10,7 @@ const rateLimitMiddleware = require('./middlewares/rate-limit')
 const app =express()
 
 app.use(cors())
-app.use(morgan('combined'))
+app.use(morgan('dev'))
 app.use(rateLimitMiddleware)
 app.use(express.json())
 
