@@ -20,10 +20,13 @@ module.exports = async (req, res, next) => {
     if (!user) {
       return next(createError("unauthenticated", 401));
     }
-    
+    delete user.password;
     req.user = user;
     next();
   } catch (err) {
+    if (err.name === 'TokenExpiredError' || err.name === 'JsonWebTokenError') {
+        err.statusCode = 401
+    }
     next(err);
   }
 };
