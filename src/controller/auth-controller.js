@@ -30,19 +30,19 @@ exports.register = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   try {
-    console.log(req.body)
+    console.log(req.body);
     const { value, error } = loginSchema.validate(req.body);
     if (error) {
       console.log(error.name);
       return next(error);
     }
-console.log(value)
+    console.log(value);
     const user = await prisma.user.findFirst({
       where: {
         OR: [{ email: value.emailOrMobile }, { mobile: value.emailOrMobile }],
       },
     });
-    console.log(user)
+    console.log(user);
     if (!user) {
       return next(createError("invalid credential", 400));
     }
@@ -64,4 +64,8 @@ console.log(value)
   } catch (err) {
     next(err);
   }
+};
+
+exports.getMe = (req, res, next) => {
+  res.status(200).json({ user: req.user });
 };
