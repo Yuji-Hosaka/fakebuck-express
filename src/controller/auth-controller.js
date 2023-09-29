@@ -30,28 +30,26 @@ exports.register = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   try {
-    const { value, error } = loginSchema.validate(req.body)
+    console.log(req.body)
+    const { value, error } = loginSchema.validate(req.body);
     if (error) {
-      console.log(error.name)
-      return next(error)
+      console.log(error.name);
+      return next(error);
     }
-
+console.log(value)
     const user = await prisma.user.findFirst({
-    where: {
-        OR: [
-          {email: value.emailOrMobile},
-          {mobile: value.emailOrMobile}
-        ]
-      }
-    })
+      where: {
+        OR: [{ email: value.emailOrMobile }, { mobile: value.emailOrMobile }],
+      },
+    });
+    console.log(user)
     if (!user) {
-      return next(createError('invalid credential', 400))
-      
+      return next(createError("invalid credential", 400));
     }
 
-    const isMatch = await bcrypt.compare(value.password, user.password)
-    if(!isMatch) {
-      return next(createError('invalid credential', 400))
+    const isMatch = await bcrypt.compare(value.password, user.password);
+    if (!isMatch) {
+      return next(createError("invalid credential", 400));
     }
 
     const payload = { userId: user.id };
@@ -60,9 +58,9 @@ exports.login = async (req, res, next) => {
       process.env.JWT_SECRET_KEY || "iheretooaldjflakaden",
       { expiresIn: process.env.JWT_EXPIRE }
     );
+    delete user.password;
 
-    res.status(200).json({ accessToken });
-
+    res.status(200).json({ accessToken, user });
   } catch (err) {
     next(err);
   }
