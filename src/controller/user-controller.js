@@ -2,6 +2,7 @@ const cloudinary = require("../config/cloudinary");
 const createError = require("../utils/create-error");
 const { upload } = require("../utils/cloudinary-ser");
 const prisma = require('../models/prisma')
+const fs = require('fs/promises')
 
 exports.updateProfile = async (req, res, next) => {
   try {
@@ -34,5 +35,12 @@ exports.updateProfile = async (req, res, next) => {
     res.status(200).json({ message: "Update successful" });
   } catch (err) {
     next(err);
+  } finally{
+    if(req.files.profileImage) {
+      fs.unlink(req.files.profileImage[0].path)
+    }
+    if(req.files.coverImage) {
+      fs.unlink(req.files.coverImage[0].path)
+    }
   }
 };
