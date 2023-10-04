@@ -9,8 +9,12 @@ exports.updateProfile = async (req, res, next) => {
     if (!req.files) {
       return next(createError("Profile image or Cover image is required"));
     }
+
+    const response = {}
+
     if (req.files.profileImage) {
       const url = await upload(req.files.profileImage[0].path);
+      response.profileImage = url
       await prisma.user.update({
         data: {
           profileImage: url
@@ -22,6 +26,7 @@ exports.updateProfile = async (req, res, next) => {
     }
     if (req.files.coverImage) {
       const url = await upload(req.files.coverImage[0].path);
+      response.coverImage = url
       await prisma.user.update({
         data: {
           coverImage: url
@@ -32,7 +37,7 @@ exports.updateProfile = async (req, res, next) => {
       })
     }
     
-    res.status(200).json({ message: "Update successful" });
+    res.status(200).json(response);
   } catch (err) {
     next(err);
   } finally{
