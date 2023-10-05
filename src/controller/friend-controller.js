@@ -84,3 +84,31 @@ exports.acceptRequest = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.rejectRequest = async (req, res, next) => {
+  try {
+    const { value, error } = checkRequesterIdSchema.validate(req.params);
+    if (error) {
+      return next(error);
+    }
+    const existRelationship = await prisma.friend.findFirst({
+      where: {
+        receiverId: req.user.id,
+        requesterId: value.requesterId,
+        status: STATUS_PENDING,
+      },
+    });
+    if (!existRelationship) {
+      return next(createError("Relationship does not exist", 400));
+    }
+
+    await prisma.friend.delete({
+      where: {
+        id: existRelationship.id,
+      },
+    });
+    res.status(200).json({ message: "Rejected" });
+  } catch (err) {
+    next(err);
+  }
+};

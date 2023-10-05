@@ -17,4 +17,10 @@ router.patch(
   friendController.acceptRequest
 );
 
+router.delete(
+  "/:requesterId/reject",
+  authenticateMiddleware,
+  friendController.rejectRequest
+);
+
 module.exports = router;
