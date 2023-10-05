@@ -1,7 +1,10 @@
-const { STATUS_PENDING } = require("../config/constants");
+const { STATUS_PENDING, STATUS_ACCEPTED } = require("../config/constants");
 const prisma = require("../models/prisma");
 const createError = require("../utils/create-error");
-const { checkReceiverIdSchema } = require("../validators/user-validator");
+const {
+  checkReceiverIdSchema,
+  checkRequesterIdSchema,
+} = require("../validators/user-validator");
 
 exports.requestFriend = async (req, res, next) => {
   try {
@@ -45,6 +48,38 @@ exports.requestFriend = async (req, res, next) => {
       },
     });
     res.status(201).json({ message: "request has been sent" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.acceptRequest = async (req, res, next) => {
+  try {
+    const { value, error } = checkRequesterIdSchema.validate(req.params);
+    if (error) {
+      return next(error);
+    }
+    const existRelationship = await prisma.friend.findFirst({
+      where: {
+        requesterId: value.requesterId,
+        receiverId: req.user.id,
+        status: STATUS_PENDING,
+      },
+    });
+
+    if (!existRelationship) {
+      return next(createError("Relationship does not found", 400));
+    }
+
+    await prisma.friend.update({
+      data: {
+        status: STATUS_ACCEPTED,
+      },
+      where: {
+        id: existRelationship.id,
+      },
+    });
+    res.status(200).json({ message: "Accepted Friend" });
   } catch (err) {
     next(err);
   }

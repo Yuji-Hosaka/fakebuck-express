@@ -37,7 +37,7 @@ GET USER PROFILE BY ID
 GET /user/:userId
 HEADER AUTHORIZATION Bearer ACCESS_TOKEN
 RESPONSE
-200 { user: { id: Number, firstName: String, . . .}}
+200 { user: { id: Number, firstName: String, . . .}, status: String}
 401 {message: string}
 500 {message: string}
 

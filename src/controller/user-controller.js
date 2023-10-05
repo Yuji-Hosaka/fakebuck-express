@@ -5,6 +5,38 @@ const prisma = require("../models/prisma");
 const fs = require("fs/promises");
 const { error } = require("console");
 const { checkUserIdSchema } = require("../validators/user-validator");
+const { AUTH_USER, UNKNOWN, STATUS_ACCEPTED, FRIEND, REQUESTER, RECEIVER } = require("../config/constants");
+
+const getTargetUserStatusWithAuthUser = async (targetUserId, authUserId) => {
+  if (targetUserId === authUserId) {
+    return AUTH_USER
+  }
+
+  const relationship = await prisma.friend.findFirst({
+    where: {
+      OR: [
+        { requesterId: targetUserId, receiverId: authUserId },
+        { requesterId: authUserId, receiverId: targetUserId },
+      ],
+    },
+  });
+  if(!relationship) {
+    return UNKNOWN
+  }
+
+  if (relationship.status === STATUS_ACCEPTED) {
+    return FRIEND
+
+  }
+
+  if (relationship.requesterId === targetUserId) {
+    return REQUESTER
+  }
+
+  return RECEIVER
+
+
+}
 
 exports.updateProfile = async (req, res, next) => {
   try {
@@ -67,7 +99,11 @@ exports.getUserById = async (req, res, next) => {
     if (user) {
       delete user.password;
     }
-    res.status(200).json({ user });
+
+    const status = await getTargetUserStatusWithAuthUser(userId,req.user.id)
+   
+
+    res.status(200).json({ user,status });
   } catch (err) {
     next(error);
   }
