@@ -4,6 +4,7 @@ const createError = require("../utils/create-error");
 const {
   checkReceiverIdSchema,
   checkRequesterIdSchema,
+  checkFriendIdSchema,
 } = require("../validators/user-validator");
 
 exports.requestFriend = async (req, res, next) => {
@@ -136,6 +137,37 @@ exports.cancelRequest = async (req, res, next) => {
       },
     });
     res.status(200).json({ message: "Success cancellaion" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.unfriend = async (req, res, next) => {
+  try {
+    const { value, error } = checkFriendIdSchema.validate(req.params);
+    if (error) {
+      return next(error);
+    }
+    const existRelationship = await prisma.friend.findFirst({
+      where: {
+        OR: [
+          { requesterId: req.user.id, receiverId: value.friendId },
+          { requesterId: value.friendId, receiverId: req.user.id },
+        ],
+        status: STATUS_ACCEPTED,
+      },
+    });
+
+    if (!existRelationship) {
+      return next(createError("Relationship does not exist", 400));
+    }
+
+    await prisma.friend.delete({
+      where: {
+        id: existRelationship.id,
+      },
+    });
+    res.status(200).json({ message: "Friendship terminated" });
   } catch (err) {
     next(err);
   }

@@ -28,4 +28,10 @@ router.delete(
   friendController.cancelRequest
 );
 
+router.delete(
+  "/:friendId/unfriend",
+  authenticateMiddleware,
+  friendController.unfriend
+);
+
 module.exports = router;

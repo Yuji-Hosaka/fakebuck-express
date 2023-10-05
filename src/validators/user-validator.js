@@ -17,3 +17,9 @@ const checkRequesterIdSchema = Joi.object({
 });
 
 exports.checkRequesterIdSchema = checkRequesterIdSchema;
+
+const checkFriendIdSchema = Joi.object({
+  friendId: Joi.number().integer().positive().required()
+})
+
+exports.checkFriendIdSchema = checkFriendIdSchema
