@@ -42,6 +42,45 @@ const getTargetUserStatusWithAuthUser = async (targetUserId, authUserId) => {
   return RECEIVER;
 };
 
+const getTargetUserFriends = async (targetUserId) => {
+  const relationships = await prisma.friend.findMany({
+    where: {
+      status: STATUS_ACCEPTED,
+      OR: [{ requesterId: targetUserId }, { receiverId: targetUserId }],
+    },
+    select: {
+      requester: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          mobile: true,
+          profileImage: true,
+          coverImage: true,
+        },
+      },
+      receiver: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          mobile: true,
+          profileImage: true,
+          coverImage: true,
+        },
+      },
+    },
+  });
+  // console.log(relationships);
+  const friends = relationships.map((el) =>
+    el.requester.id === targetUserId ? el.receiver : el.requester
+  );
+  // console.log(friends)
+  return friends;
+};
+
 exports.updateProfile = async (req, res, next) => {
   try {
     if (!req.files) {
@@ -101,12 +140,14 @@ exports.getUserById = async (req, res, next) => {
       },
     });
     let status = null;
+    let friends = null;
     if (user) {
       delete user.password;
       status = await getTargetUserStatusWithAuthUser(userId, req.user.id);
+      friends = await getTargetUserFriends(userId);
     }
-
-    res.status(200).json({ user, status });
+    console.log(friends);
+    res.status(200).json({ user, status, friends });
   } catch (err) {
     next(error);
   }
