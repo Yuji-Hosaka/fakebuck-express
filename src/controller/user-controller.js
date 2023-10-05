@@ -5,11 +5,18 @@ const prisma = require("../models/prisma");
 const fs = require("fs/promises");
 const { error } = require("console");
 const { checkUserIdSchema } = require("../validators/user-validator");
-const { AUTH_USER, UNKNOWN, STATUS_ACCEPTED, FRIEND, REQUESTER, RECEIVER } = require("../config/constants");
+const {
+  AUTH_USER,
+  UNKNOWN,
+  STATUS_ACCEPTED,
+  FRIEND,
+  REQUESTER,
+  RECEIVER,
+} = require("../config/constants");
 
 const getTargetUserStatusWithAuthUser = async (targetUserId, authUserId) => {
   if (targetUserId === authUserId) {
-    return AUTH_USER
+    return AUTH_USER;
   }
 
   const relationship = await prisma.friend.findFirst({
@@ -20,23 +27,20 @@ const getTargetUserStatusWithAuthUser = async (targetUserId, authUserId) => {
       ],
     },
   });
-  if(!relationship) {
-    return UNKNOWN
+  if (!relationship) {
+    return UNKNOWN;
   }
 
   if (relationship.status === STATUS_ACCEPTED) {
-    return FRIEND
-
+    return FRIEND;
   }
 
-  if (relationship.requesterId === targetUserId) {
-    return REQUESTER
+  if (relationship.requesterId === authUserId) {
+    return REQUESTER;
   }
 
-  return RECEIVER
-
-
-}
+  return RECEIVER;
+};
 
 exports.updateProfile = async (req, res, next) => {
   try {
@@ -96,14 +100,13 @@ exports.getUserById = async (req, res, next) => {
         id: userId,
       },
     });
+    let status = null;
     if (user) {
       delete user.password;
+      status = await getTargetUserStatusWithAuthUser(userId, req.user.id);
     }
 
-    const status = await getTargetUserStatusWithAuthUser(userId,req.user.id)
-   
-
-    res.status(200).json({ user,status });
+    res.status(200).json({ user, status });
   } catch (err) {
     next(error);
   }
