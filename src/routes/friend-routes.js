@@ -22,5 +22,10 @@ router.delete(
   authenticateMiddleware,
   friendController.rejectRequest
 );
+router.delete(
+  "/:receiverId/cancel",
+  authenticateMiddleware,
+  friendController.cancelRequest
+);
 
 module.exports = router;

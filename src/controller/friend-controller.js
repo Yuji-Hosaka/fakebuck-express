@@ -112,3 +112,31 @@ exports.rejectRequest = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.cancelRequest = async (req, res, next) => {
+  try {
+    const { value, error } = checkReceiverIdSchema.validate(req.params);
+    if (error) {
+      return next(error);
+    }
+    const existRelationship = await prisma.friend.findFirst({
+      where: {
+        requesterId: req.user.id,
+        receiverId: value.receiverId,
+        status: STATUS_PENDING,
+      },
+    });
+    if (!existRelationship) {
+      return next(createError("Relationship does not exist", 400));
+    }
+
+    await prisma.friend.delete({
+      where: {
+        id: existRelationship.id,
+      },
+    });
+    res.status(200).json({ message: "Success cancellaion" });
+  } catch (err) {
+    next(err);
+  }
+};
