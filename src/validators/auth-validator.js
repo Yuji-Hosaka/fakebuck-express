@@ -30,13 +30,11 @@ const registerSchema = Joi.object({
 
 // const validate = schema => input => {}
 
-
 exports.registerSchema = registerSchema;
 
 const loginSchema = Joi.object({
   emailOrMobile: Joi.string().required(),
-  password: Joi.string().required()
+  password: Joi.string().required(),
+});
 
-})
-
-exports.loginSchema = loginSchema
+exports.loginSchema = loginSchema;
