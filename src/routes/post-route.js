@@ -3,6 +3,7 @@ const express = require("express");
 const authenticateMiddleware = require("../middlewares/authenticate");
 const uploadMiddleware = require("../middlewares/upload");
 const postController = require("../controller/post-controller");
+const likeController = require("../controller/like-controller");
 
 const router = express.Router();
 
@@ -18,5 +19,7 @@ router.get(
   authenticateMiddleware,
   postController.getAllPostIncludeFriendPost
 );
+
+router.post("/:postId/like", authenticateMiddleware, likeController.toggleLike);
 
 module.exports = router;
