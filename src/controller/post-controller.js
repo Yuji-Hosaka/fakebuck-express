@@ -2,7 +2,7 @@ const fs = require("fs/promises");
 const createError = require("../utils/create-error");
 const { upload } = require("../utils/cloudinary-ser");
 const prisma = require("../models/prisma");
-const { STATUS_ACCEPTED} = require('../config/constants')
+const { STATUS_ACCEPTED } = require("../config/constants");
 
 const getFriendIds = async (targetUserId) => {
   const relationship = await prisma.friend.findMany({
@@ -52,6 +52,10 @@ exports.getAllPostIncludeFriendPost = async (req, res, next) => {
         userId: {
           in: [...friendIds, req.user.id],
         },
+      },
+
+      orderBy: {
+        createdAt: "desc",
       },
     });
     res.status(200).json({ posts });
