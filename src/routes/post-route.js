@@ -13,4 +13,10 @@ router.post(
   postController.createPost
 );
 
+router.get(
+  "/friend",
+  authenticateMiddleware,
+  postController.getAllPostIncludeFriendPost
+);
+
 module.exports = router;
