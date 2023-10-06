@@ -66,7 +66,11 @@ exports.getAllPostIncludeFriendPost = async (req, res, next) => {
             profileImage: true,
           },
         },
-        likes: true
+        likes: {
+          select: {
+            userId: true,
+          },
+        },
       },
     });
     res.status(200).json({ posts });
