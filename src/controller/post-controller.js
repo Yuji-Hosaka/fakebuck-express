@@ -1,3 +1,4 @@
+const fs = require('fs/promises')
 const createError = require("../utils/create-error");
 const { upload } = require("../utils/cloudinary-ser");
 const prisma = require("../models/prisma");
@@ -22,5 +23,9 @@ exports.createPost = async (req, res, next) => {
     res.status(201).json({ message: "post created" });
   } catch (err) {
     next(err);
+  } finally {
+    if (req.file) {
+      fs.unlink(req.file.path)
+    }
   }
 };
