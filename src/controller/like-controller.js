@@ -35,9 +35,9 @@ exports.toggleLike = async (req, res, next) => {
           totalLike: {
             decrement: 1,
           },
-          where: {
-            id: value.postId,
-          },
+        },
+        where: {
+          id: value.postId,
         },
       });
       return res.status(200).json({ message: "un-liked" });
