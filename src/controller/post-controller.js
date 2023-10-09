@@ -3,6 +3,7 @@ const createError = require("../utils/create-error");
 const { upload } = require("../utils/cloudinary-ser");
 const prisma = require("../models/prisma");
 const { STATUS_ACCEPTED } = require("../config/constants");
+const { checkPostIdSchema } = require("../validators/post-validator");
 
 const getFriendIds = async (targetUserId) => {
   const relationship = await prisma.friend.findMany({
@@ -89,6 +90,34 @@ exports.getAllPostIncludeFriendPost = async (req, res, next) => {
       },
     });
     res.status(200).json({ posts });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deletePost = async (req, res, next) => {
+  try {
+    const { value, error } = checkPostIdSchema.validate(req.params);
+    if (error) {
+      return next(error);
+    }
+
+    const existPost = await prisma.post.findFirst({
+      where: {
+        id: value.postId,
+        userId: req.user.id,
+      },
+    });
+
+    if (!existPost) {
+      return next(createError("Unable to delete this post", 400));
+    }
+    await prisma.post.delete({
+      where: {
+        id: existPost.id,
+      },
+    });
+    res.status(200).json({ message: "deleted" });
   } catch (err) {
     next(err);
   }
